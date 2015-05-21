@@ -1,0 +1,78 @@
+<?php
+    $GLOBALS['player1_wins'] = ["sl", "ls", "dj", "jd", "fk", "kf"];
+    $GLOBALS['player2_wins'] = ["jf", "fj", "ks", "sk", "ld", "dl"];
+    $GLOBALS['draw'] = ["sj", "js", "dk", "kd", "fl", "lf"];
+
+    function rock_paper_scissors_menu() {
+        $items['rps'] = array(
+            'title' => 'Rock, Paper, Scissors!',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('game_form'),
+            'access callback' => TRUE,
+            'type' => MENU_NORMAL_ITEM,
+        );
+        $items['winner'] = array(
+           'title' => 'Results:',
+            'page callback' => 'rps_winner',
+            'access callback' => TRUE,
+            'type' => MENU_CALLBACK,
+        );
+
+        return $items;
+    }
+
+    function game_form() {
+        $form['player_one'] = array(
+            '#title' => 'Player one',
+            '#type' => 'textfield',
+            '#description' => t('Player One uses sdf and Player Two uses jkl to play!'),
+            '#element_validate' => array('element_validate_in_array'),
+            '#required' => TRUE,
+        );
+        $form['submit'] = array(
+          '#type' => 'submit',
+            '#value' => 'GO!',
+        );
+
+        return $form;
+    }
+
+
+    function element_validate_in_array($element){
+
+        $temp = strtolower($element['#value']);
+        if((!in_array($temp, $GLOBALS['player1_wins']) &&
+                !in_array($temp, $GLOBALS['player2_wins']) &&
+                !in_array($temp, $GLOBALS['draw']))||
+            (strlen($temp) != 2)) {
+            form_error($element, t('Please use SDF or JKL to play'));
+        }
+    }
+
+    function game_form_submit($form, &$form_state) {
+//        $player2array = ["j", "k", "l"];
+        //grab random index from computer player array
+//        $computerplayer2 = array_rand($player2array, 1);
+        //assign index to input2
+//        $input2 = $player2array[$computerplayer2];
+        //concat
+
+        $newval = $form_state['values']['player_one'];
+
+        if(in_array($newval, $GLOBALS['player1_wins'])){
+            $_SESSION['result'] = 'Player 1 wins!';
+        } else if(in_array($newval, $GLOBALS['player2_wins'])){
+            $_SESSION['result'] = 'Player 2 wins!';
+        } else if(in_array($newval, $GLOBALS['draw'])){
+            $_SESSION['result'] = 'You both win!';
+        } else {
+            $_SESSION['result'] = 'Something went wrong! =(';
+        }
+
+        $form_state['redirect'] = 'winner';
+    }
+
+    function rps_winner() {
+        return '<p>' . $_SESSION['result'] . '</p>';
+    }
+
